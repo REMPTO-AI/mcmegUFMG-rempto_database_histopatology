@@ -1,0 +1,59 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Visualizador - Planilha</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>DataBase Rempto histopatlogy</h1>
+  </header>
+
+  <div id="screenNav">
+    <button class="screenButton active" data-screen="screenList">Lista</button>
+    <button class="screenButton" data-screen="screenDashboard">Dashboard</button>
+    <button id="adminButton" class="screenButton hidden" data-screen="screenAdmin">Admin</button>
+  </div>
+
+  <main>
+
+
+    <section id="screenList" class="screen">
+      <section id="sidebar">
+        <input id="filter" placeholder="Pesquisar..." />
+        <div id="listContainer">
+          <ul id="list"></ul>
+        </div>
+      </section>
+
+      <section id="detail">
+        <div id="meta"></div>
+        <div id="imageContainer"></div>
+      </section>
+    </section>
+
+    <section id="screenDashboard" class="screen">
+      <div id="dashboard"></div>
+    </section>
+
+    <section id="screenAdmin" class="screen">
+      <div class="admin-panel">
+        <h2>Administração de cadastros</h2>
+        <div class="admin-section">
+          <h3>Cadastros pendentes</h3>
+          <div id="pendingRequests"></div>
+        </div>
+        <div class="admin-section">
+          <h3>Usuários registrados</h3>
+          <div id="registeredUsers"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
