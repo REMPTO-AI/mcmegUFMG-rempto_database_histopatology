@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (data.user && data.user.identities && data.user.identities.length === 0) {
         showMsg('registerMsg', 'Este e-mail já está cadastrado.', 'error');
       } else {
-        showMsg('registerMsg', 'Conta criada! Verifique seu e-mail para confirmar o cadastro.', 'success');
+        showMsg('registerMsg', 'Conta criada! Aguarde a aprovação de um administrador para acessar o sistema.', 'success');
       }
     } catch (e) {
       console.error('signUp exception:', e);
