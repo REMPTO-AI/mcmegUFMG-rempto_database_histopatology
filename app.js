@@ -216,6 +216,15 @@ function normalizeChartValue(key, value){
   if(/other\s*cancer\s*diagnosis/i.test(key)){
     if(/^N\/?A$/i.test(text)) return 'N/A';
   }
+  if(/^race$/i.test(key)){
+    if(/^white$/i.test(text)) return 'White';
+    if(/^(na|not\s*reported|n\/a)$/i.test(text)) return 'Not Reported';
+    if(/^(black|african\s*american|black\s*or\s*african\s*american)$/i.test(text)) return 'Black or African American';
+  }
+  if(/^ethnicity$/i.test(key)){
+    if(/^not\s*hispanic\s*or\s*latino$/i.test(text)) return 'Not Hispanic or Latino';
+    if(/^(na|n\/a|not\s*reported)$/i.test(text)) return 'N/A';
+  }
   return text;
 }
 
@@ -300,6 +309,7 @@ function createCategoryCard(title, data, keys, options = {}){
     : tally(data.map(item=>valueByKeys(item, keys)).filter(v=>v), keys[0]);
   const entries = Object.entries(counts)
     .sort((a,b)=>{
+      if(options.sortByValue) return b[1]-a[1];
       if(/tumor\s*grade|grau.*tumor/i.test(title)){
         return gradeLabelOrder(a[0]) - gradeLabelOrder(b[0]) || b[1] - a[1];
       }
@@ -710,7 +720,7 @@ function renderDashboard(data){
   const histologyCard = createCategoryCard('Histological Type', data, histologyKeys);
   dashboard.appendChild(histologyCard);
 
-  const tumorGradeCard = createCategoryCard('Tumor Grade', data, tumorGradeKeys);
+  const tumorGradeCard = createCategoryCard('Tumor Grade', data, tumorGradeKeys, { sortByValue: true });
   dashboard.appendChild(tumorGradeCard);
 
   const ethnicityCard = createCategoryCard('Ethnicity', data, ethnicityKeys);
@@ -728,10 +738,12 @@ function renderDashboard(data){
     return acc;
   }, {});
   if(Object.keys(hgsocCounts).length){
-    const hgsocEntries = Object.entries(hgsocCounts).map(([label, value]) => {
-      const displayLabel = label === 'HGSOC_MP' ? 'Mario Penna' : label === 'HGSOC_NIH' ? 'NIH' : label;
-      return { label: displayLabel, value };
-    });
+    const hgsocEntries = Object.entries(hgsocCounts)
+      .map(([label, value]) => {
+        const displayLabel = label === 'HGSOC_MP' ? 'Mario Penna' : label === 'HGSOC_NIH' ? 'NIH' : label;
+        return { label: displayLabel, value };
+      })
+      .sort((a, b) => b.value - a.value);
     const hgsocCard = document.createElement('div');
     hgsocCard.className = 'dashboard-card';
     const hgsocHeading = document.createElement('h3');
