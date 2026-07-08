@@ -10,8 +10,9 @@ main{flex:1;display:flex;min-height:0}
 .screen{display:none!important;flex:1;min-height:0;overflow:hidden}
 .screen.active{display:flex!important}
 #screenDashboard{flex-direction:column}
-#screenAdmin{display:none!important}
+#screenAdmin{display:none}
 .hidden{display:none!important}
+#adminButton:not(.hidden){display:flex!important}
 #sidebar{width:320px;border-right:1px solid #ddd;padding:12px;display:flex;flex-direction:column;min-height:0;flex:0 0 320px;overflow:hidden}
 #sidebar input{width:100%;padding:8px;margin-bottom:8px}
 #listContainer{flex:1;min-height:0;overflow-y:auto;border-top:1px solid #eee;padding-top:6px}

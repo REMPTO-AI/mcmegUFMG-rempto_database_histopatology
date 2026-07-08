@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login - DataBase Rempto Histopatology</title>
+  <style>
+    *{box-sizing:border-box;font-family:Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:0}
+    body{min-height:100vh;display:flex;flex-direction:column;background:#f8f0f2}
+    header{padding:14px 20px;background:#6f1726;color:#fff;font-size:1.1rem;font-weight:600}
+    .auth-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+    .auth-card{background:#fff;border:1px solid #e8d9de;border-radius:16px;box-shadow:0 8px 24px rgba(43,17,37,.1);width:100%;max-width:400px;padding:32px}
+    .tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid #f0e4e8}
+    .tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:1rem;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+    .tab.active{color:#7a1b31;font-weight:700;border-bottom-color:#7a1b31}
+    .form-group{margin-bottom:16px}
+    label{display:block;font-size:.9rem;color:#555;margin-bottom:6px}
+    input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:1rem;transition:border-color .2s;outline:none}
+    input:focus{border-color:#7a1b31}
+    .btn{width:100%;padding:12px;background:#7a1b31;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px}
+    .btn:hover{background:#6f1726}
+    .btn:disabled{background:#c98a97;cursor:not-allowed}
+    .msg{margin-top:14px;padding:10px 12px;border-radius:8px;font-size:.9rem;display:none}
+    .msg.error{background:#fde8ec;color:#9f1239;border:1px solid #f5c2cc;display:block}
+    .msg.success{background:#e6f4ea;color:#1a7c3f;border:1px solid #b7dfbf;display:block}
+    .panel{display:none}
+    .panel.active{display:block}
+  </style>
+</head>
+<body>
+  <header>DataBase Rempto Histopatology</header>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="tabs">
+        <div class="tab active" data-tab="login">Entrar</div>
+        <div class="tab" data-tab="register">Registrar</div>
+      </div>
+
+      <div id="panelLogin" class="panel active">
+        <div class="form-group">
+          <label for="loginEmail">E-mail</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn" id="btnLogin">Entrar</button>
+        <div class="msg" id="loginMsg"></div>
+      </div>
+
+      <div id="panelRegister" class="panel">
+        <div class="form-group">
+          <label for="regName">Nome completo</label>
+          <input type="text" id="regName" placeholder="Seu nome" autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="regEmail">E-mail</label>
+          <input type="email" id="regEmail" placeholder="seu@email.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Senha</label>
+          <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label for="regConfirm">Confirmar senha</label>
+          <input type="password" id="regConfirm" placeholder="Repita a senha" autocomplete="new-password" />
+        </div>
+        <button class="btn" id="btnRegister">Criar conta</button>
+        <div class="msg" id="registerMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>

@@ -789,9 +789,25 @@ function setupScreens(){
   });
 }
 
-async function showApp(){
+async function showApp(role){
   const adminButton = document.getElementById('adminButton');
-  adminButton.classList.add('hidden');
+  if(role === 'admin') {
+    adminButton.classList.remove('hidden');
+    adminButton.style.display = '';
+  } else {
+    adminButton.classList.add('hidden');
+  }
+
+  const header = document.querySelector('header');
+  const logoutBtn = document.createElement('button');
+  logoutBtn.textContent = 'Sair';
+  logoutBtn.style.cssText = 'float:right;padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;cursor:pointer;font-size:.9rem';
+  logoutBtn.addEventListener('click', async () => {
+    await sbClient.auth.signOut();
+    window.location.href = 'login.html';
+  });
+  header.appendChild(logoutBtn);
+
   showScreen('screenList');
 }
 
@@ -805,11 +821,104 @@ async function showApp(){
 
 
 
-document.addEventListener('DOMContentLoaded',async ()=>{
+const SUPABASE_URL = 'https://jkxhgkjrtsamukrwulji.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGhna2pydHNhbXVrcnd1bGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDgyODYsImV4cCI6MjA5OTA4NDI4Nn0.OQWWy1g4U7w4ynxpwPHQFwFXI11f3j9wei_F8p7yknM';
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) { window.location.href = 'login.html'; return; }
+
+  const { data: profile } = await sbClient
+    .from('profiles')
+    .select('role, full_name')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile || (profile.role !== 'approved' && profile.role !== 'admin')) {
+    showPendingScreen(session.user.email);
+    return;
+  }
+
   const data = await loadData();
   renderList(data);
   renderDashboard(data);
   setupFilter(data);
   setupScreens();
-  await showApp();
+  await showApp(profile.role);
+
+  if (profile.role === 'admin') {
+    await loadAdminPanel();
+  }
 });
+
+function showPendingScreen(email) {
+  document.getElementById('screenNav').style.display = 'none';
+  document.querySelector('main').innerHTML = `
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:32px">
+      <div style="background:#fff;border:1px solid #e8d9de;border-radius:16px;padding:40px;max-width:440px;text-align:center;box-shadow:0 8px 24px rgba(43,17,37,.1)">
+        <div style="font-size:2.5rem;margin-bottom:16px">⏳</div>
+        <h2 style="color:#7a1b31;margin-bottom:12px">Aguardando aprovação</h2>
+        <p style="color:#555;margin-bottom:8px">Sua conta (<strong>${email}</strong>) foi criada com sucesso.</p>
+        <p style="color:#555;margin-bottom:24px">Um administrador precisa aprovar seu acesso antes de continuar.</p>
+        <button onclick="sbClient.auth.signOut().then(()=>location.href='login.html')" style="padding:10px 24px;background:#7a1b31;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem">Sair</button>
+      </div>
+    </div>`;
+}
+
+async function loadAdminPanel() {
+  const { data: pending, error: e1 } = await sbClient
+    .from('profiles')
+    .select('id, email, full_name, created_at')
+    .eq('role', 'pending')
+    .order('created_at');
+
+  const { data: users, error: e2 } = await sbClient
+    .from('profiles')
+    .select('id, email, full_name, role, created_at')
+    .neq('role', 'pending')
+    .order('created_at');
+
+  const pendingEl = document.getElementById('pendingRequests');
+  const usersEl = document.getElementById('registeredUsers');
+
+  pendingEl.innerHTML = pending && pending.length ? '' : '<p style="color:#888">Nenhum cadastro pendente.</p>';
+  (pending || []).forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'pending-card';
+    card.innerHTML = `
+      <span><strong>${u.full_name || '—'}</strong><br><small>${u.email}</small></span>
+      <div class="pending-actions">
+        <button class="approve" data-id="${u.id}">Aprovar</button>
+        <button class="reject" data-id="${u.id}">Rejeitar</button>
+      </div>`;
+    card.querySelector('.approve').addEventListener('click', () => updateRole(u.id, 'approved'));
+    card.querySelector('.reject').addEventListener('click', () => updateRole(u.id, 'rejected'));
+    pendingEl.appendChild(card);
+  });
+
+  usersEl.innerHTML = users && users.length ? '' : '<p style="color:#888">Nenhum usuário registrado.</p>';
+  (users || []).forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'pending-card';
+    card.innerHTML = `
+      <span><strong>${u.full_name || '—'}</strong><br><small>${u.email}</small></span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="status-badge status-${u.role}">${u.role}</span>
+        ${u.role === 'approved' ? `<button class="approve" data-id="${u.id}">Promover a Admin</button>` : ''}
+        ${u.role === 'admin' ? `<button class="reject" data-id="${u.id}">Rebaixar</button>` : ''}
+      </div>`;
+    if (u.role === 'approved') {
+      card.querySelector('.approve').addEventListener('click', () => updateRole(u.id, 'admin'));
+    }
+    if (u.role === 'admin') {
+      card.querySelector('.reject').addEventListener('click', () => updateRole(u.id, 'approved'));
+    }
+    usersEl.appendChild(card);
+  });
+}
+
+async function updateRole(userId, role) {
+  await sbClient.from('profiles').update({ role }).eq('id', userId);
+  await loadAdminPanel();
+}
