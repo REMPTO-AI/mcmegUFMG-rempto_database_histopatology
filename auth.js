@@ -1,7 +1,12 @@
 const SUPABASE_URL = 'https://jkxhgkjrtsamukrwulji.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGhna2pydHNhbXVrcnd1bGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDgyODYsImV4cCI6MjA5OTA4NDI4Nn0.OQWWy1g4U7w4ynxpwPHQFwFXI11f3j9wei_F8p7yknM';
 
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: sessionStorage,
+    persistSession: true
+  }
+});
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 

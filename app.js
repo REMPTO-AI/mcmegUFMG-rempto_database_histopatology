@@ -38,6 +38,27 @@ function getPotentialLink(value, key){
 
 function createValueElement(key, value){
   const text = value===null ? '' : String(value);
+  if(isImageNameKey(key) || /url/i.test(key)){
+    const parts = text.split(/[\s\n]+/).map(s=>s.trim()).filter(Boolean);
+    if(parts.length > 1){
+      const span = document.createElement('span');
+      parts.forEach((part, i) => {
+        const link = getPotentialLink(part, key);
+        if(link){
+          const a = document.createElement('a');
+          a.href = link;
+          a.target = '_blank';
+          a.rel = 'noreferrer';
+          a.textContent = part;
+          span.appendChild(a);
+        } else {
+          span.appendChild(document.createTextNode(part));
+        }
+        if(i < parts.length - 1) span.appendChild(document.createElement('br'));
+      });
+      return span;
+    }
+  }
   const link = getPotentialLink(text, key);
   if(link){
     const a = document.createElement('a');
@@ -112,13 +133,16 @@ function showDetail(item){
   imgCont.innerHTML = '';
   if(imageKey && item[imageKey]){
     const imgValue = String(item[imageKey]).trim();
-    const imgHref = getPotentialLink(imgValue, imageKey);
-    if(imgHref && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(imgHref)){
-      const img = document.createElement('img');
-      img.src = imgHref;
-      img.alt = 'image';
-      imgCont.appendChild(img);
-    }
+    const parts = imgValue.split(/[\s\n]+/).map(s=>s.trim()).filter(Boolean);
+    parts.forEach(part => {
+      const imgHref = getPotentialLink(part, imageKey);
+      if(imgHref && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(imgHref)){
+        const img = document.createElement('img');
+        img.src = imgHref;
+        img.alt = 'image';
+        imgCont.appendChild(img);
+      }
+    });
   }
 }
 
@@ -823,7 +847,12 @@ async function showApp(role){
 
 const SUPABASE_URL = 'https://jkxhgkjrtsamukrwulji.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreGhna2pydHNhbXVrcnd1bGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDgyODYsImV4cCI6MjA5OTA4NDI4Nn0.OQWWy1g4U7w4ynxpwPHQFwFXI11f3j9wei_F8p7yknM';
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: sessionStorage,
+    persistSession: true
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   const { data: { session } } = await sbClient.auth.getSession();
