@@ -907,6 +907,7 @@ async function loadAdminPanel() {
         <span class="status-badge status-${u.role}">${u.role}</span>
         ${u.role === 'approved' ? `<button class="approve" data-id="${u.id}">Promover a Admin</button>` : ''}
         ${u.role === 'admin' ? `<button class="reject" data-id="${u.id}">Rebaixar</button>` : ''}
+        <button class="delete" data-id="${u.id}">Excluir</button>
       </div>`;
     if (u.role === 'approved') {
       card.querySelector('.approve').addEventListener('click', () => updateRole(u.id, 'admin'));
@@ -914,6 +915,7 @@ async function loadAdminPanel() {
     if (u.role === 'admin') {
       card.querySelector('.reject').addEventListener('click', () => updateRole(u.id, 'approved'));
     }
+    card.querySelector('.delete').addEventListener('click', () => deleteUser(u.id));
     usersEl.appendChild(card);
   });
 }
@@ -921,4 +923,25 @@ async function loadAdminPanel() {
 async function updateRole(userId, role) {
   await sbClient.from('profiles').update({ role }).eq('id', userId);
   await loadAdminPanel();
+}
+
+async function deleteUser(userId) {
+  if (!confirm('Tem certeza que deseja excluir esta conta?')) return;
+  
+  const { data: { session } } = await sbClient.auth.getSession();
+  const res = await fetch('https://jkxhgkjrtsamukrwulji.supabase.co/functions/v1/delete-user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify({ userId })
+  });
+
+  const result = await res.json();
+  if (result.error) {
+    alert('Erro ao excluir: ' + result.error);
+  } else {
+    await loadAdminPanel();
+  }
 }
