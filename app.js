@@ -747,7 +747,7 @@ function renderDashboard(data){
     const hgsocCard = document.createElement('div');
     hgsocCard.className = 'dashboard-card';
     const hgsocHeading = document.createElement('h3');
-    hgsocHeading.textContent = 'Pacientes por banco';
+    hgsocHeading.textContent = 'Patients by Database';
     hgsocCard.appendChild(hgsocHeading);
     hgsocCard.appendChild(createDonutChartElement('Banco de pacientes', hgsocEntries, {
       chartRadius: 120,
