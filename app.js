@@ -740,7 +740,7 @@ function renderDashboard(data){
   if(Object.keys(hgsocCounts).length){
     const hgsocEntries = Object.entries(hgsocCounts)
       .map(([label, value]) => {
-        const displayLabel = label === 'HGSOC_MP' ? 'Mario Penna' : label === 'HGSOC_NIH' ? 'NIH' : label;
+        const displayLabel = label === 'HGSOC_MP' ? 'Mario Penna Institute' : label === 'HGSOC_NIH' ? 'NIH' : label;
         return { label: displayLabel, value };
       })
       .sort((a, b) => b.value - a.value);
