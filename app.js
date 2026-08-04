@@ -834,15 +834,14 @@ async function showApp(role){
     adminButton.classList.add('hidden');
   }
 
-  const header = document.querySelector('header');
   const logoutBtn = document.createElement('button');
   logoutBtn.textContent = 'Sair';
-  logoutBtn.style.cssText = 'float:right;padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;cursor:pointer;font-size:.9rem';
+  logoutBtn.style.cssText = 'padding:6px 14px;background:#7a1b31;color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:6px;cursor:pointer;font-size:.9rem;margin-left:auto';
   logoutBtn.addEventListener('click', async () => {
     await sbClient.auth.signOut();
     window.location.href = 'login.html';
   });
-  header.appendChild(logoutBtn);
+  document.getElementById('screenNav').appendChild(logoutBtn);
 
   showScreen('screenList');
 }
