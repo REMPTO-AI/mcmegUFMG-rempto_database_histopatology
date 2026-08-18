@@ -1,26 +1,47 @@
-const { google } = require('googleapis');
+const https = require('https');
 const fs = require('fs');
 
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTS5d70pMMOcasNUJGbF4Cm8RPzq30CHO4d1QQ78VAxAw5Xf5vDEMJNTwhKUfHg9w/pub?output=csv';
+
+function fetchCSV(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchCSV(res.headers.location).then(resolve).catch(reject);
+      }
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/);
+  const rows = lines.map(line => {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        inQuotes = !inQuotes;
+      } else if (ch === ',' && !inQuotes) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
+  });
+  return rows;
+}
+
 async function main() {
-  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-  });
-
-  const sheets = google.sheets({ version: 'v4', auth });
-  const spreadsheetId = process.env.SPREADSHEET_ID;
-
-  const meta = await sheets.spreadsheets.get({ spreadsheetId });
-  const sheetName = meta.data.sheets[0].properties.title;
-
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: sheetName
-  });
-
-  const rows = res.data.values || [];
-  if (!rows.length) { console.error('No data found.'); process.exit(1); }
+  const csv = await fetchCSV(CSV_URL);
+  const rows = parseCSV(csv);
 
   const headerTokens = ['patient id','identificador paciente','file name','nome arquivo','idade','diagnostico','tumor stage','estadio','hcg'];
   const headerRowIndex = rows.findIndex(row =>
